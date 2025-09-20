@@ -10,9 +10,22 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+// Add CORS policy with named policy
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyHeader()
+              .AllowAnyMethod()
+              .WithOrigins("http://localhost:3000", "https://localhost:3000"); // no trailing slash
+    });
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
+// Order is important! CORS must come before controllers
+app.UseCors("CorsPolicy");
 
 app.MapControllers();
 
