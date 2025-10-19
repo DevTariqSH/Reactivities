@@ -1,6 +1,10 @@
+using API.Middleware;
+using Application.Activities.Commands;
 using Application.Activities.Queries;
+using Application.Activities.Validators;
 using Application.Core;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence;
@@ -26,13 +30,18 @@ builder.Services.AddCors(opt =>
     });
 });
 builder.Services.AddMediatR(x =>
-x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
+{
+    x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>();
+    x.AddOpenBehavior(typeof(ValidationBehaviuor<,>));
+});
 
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+builder.Services.AddValidatorsFromAssemblyContaining<CreateActivityValidator>();
+builder.Services.AddTransient<ExceptionMiddleware>();
 
 var app = builder.Build();
 
-
+app.UseMiddleware<ExceptionMiddleware>();
 // Order is important! CORS must come before controllers
 app.UseCors("CorsPolicy");
 
